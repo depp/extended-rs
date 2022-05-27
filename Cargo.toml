@@ -1,5 +1,5 @@
 [package]
-name = "extended-rs"
+name = "extended"
 version = "0.1.0"
 edition = "2021"
 authors = ["Dietrich Epp <depp@zdome.net>"]

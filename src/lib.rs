@@ -1,20 +1,21 @@
 //! Extended-precision 80-bit floating-point numbers (f80).
 
-#[warn(missing_docs)]
+#![no_std]
 
-use std::convert::From;
+#[warn(missing_docs)]
+use core::convert::From;
 
 /// An 80-bit extended floating-point number.
-/// 
+///
 /// See Apple Numerics Manual, 2nd edition (1988), p. 18 "SANE Data Types".
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Extended {
     // The sign is stored as the high bit. The low 15 bits contain the exponent,
-	// with a bias of 16383.
+    // with a bias of 16383.
     pub sign_exponent: u16,
 
     // The fraction includes a ones place as the high bit. The value in the ones
-	// place may be zero.
+    // place may be zero.
     pub fraction: u64,
 }
 
@@ -185,6 +186,10 @@ impl From<u32> for Extended {
 
 #[cfg(test)]
 mod test {
+    extern crate std;
+
+    use std::eprintln;
+
     use super::*;
 
     fn equal_f64(x: f64, y: f64) -> bool {
@@ -241,7 +246,10 @@ mod test {
         for (n, &(exponent, fraction, expect)) in CASES.iter().enumerate() {
             for sign in 0..2 {
                 let exponent = exponent | ((sign as u16) << 15);
-                let fin = Extended { sign_exponent: exponent, fraction };
+                let fin = Extended {
+                    sign_exponent: exponent,
+                    fraction,
+                };
                 let fout = fin.to_f64();
                 let expect = if sign == 0 { expect } else { -expect };
                 if !equal_f64(fout, expect) {
@@ -288,12 +296,20 @@ mod test {
                 let exponent = exponent | ((sign as u16) << 15);
                 let fin = if sign == 0 { fin } else { -fin };
                 let fout = Extended::from(fin);
-                let expect = Extended { sign_exponent: exponent, fraction };
+                let expect = Extended {
+                    sign_exponent: exponent,
+                    fraction,
+                };
                 if fout != expect {
                     failed = true;
                     eprintln!(
                         "Case {}: Input = {:?}, Output = {:04x}:{:016x}, Expected = {:04x}:{:016x}",
-                        n, fin, fout.sign_exponent, fout.fraction, expect.sign_exponent, expect.fraction
+                        n,
+                        fin,
+                        fout.sign_exponent,
+                        fout.fraction,
+                        expect.sign_exponent,
+                        expect.fraction
                     );
                     continue;
                 }
